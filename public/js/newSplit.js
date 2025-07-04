@@ -173,7 +173,8 @@ document.addEventListener('DOMContentLoaded', () => {
     resultHTML += Object.keys(owe).map(person => {
       const originalAmount = participants.find(p => p.name === person).amount;
       const balanceChange = (originalAmount - pp).toFixed(3);
-      return `<li class="py-1 whitespace-nowrap overflow-x-auto w-full"><strong>${person}</strong>: ${balanceChange >= 0 ? '+' : ''}${balanceChange}</li>`;
+      const colorClass = balanceChange > 0 ? 'text-green-600' : (balanceChange < 0 ? 'text-red-600' : 'text-gray-700');
+      return `<li class="py-1 whitespace-nowrap overflow-x-auto w-full"><strong>${person}</strong>: <span class='${colorClass}'>${balanceChange >= 0 ? '+' : ''}${balanceChange}</span></li>`;
     }).join('');
     // Always add Save button under Final Status
     resultHTML += '<div class="mt-4 flex justify-end"><button id="saveFinalStatusBtn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">Save</button></div>';
