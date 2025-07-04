@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-// Helper to compute payment instructions, final contributions, and descriptions
+// Helper to compute payment instructions, final contributions, descriptions, and balance changes
 function computeInstructions(participants) {
   // participants: [{name, paid, balance, description}]
   const owe = {};
@@ -49,7 +49,12 @@ function computeInstructions(participants) {
     const p = participants.find(x => x.name === name);
     descriptions[name] = (p && p.description) ? p.description : 'money';
   });
-  return { paymentInstructions, finalContribution, descriptions };
+  // Balance change object
+  let balanceChange = {};
+  names.forEach(name => {
+    balanceChange[name] = +(owe[name] - pp).toFixed(3);
+  });
+  return { paymentInstructions, finalContribution, descriptions, balanceChange };
 }
 
 // GET /discord?id=...  (id can be 'latest', empty, or a split id)
@@ -71,8 +76,8 @@ router.get('/', async (req, res) => {
       [split.id]
     );
     if (participantsRes.rows.length === 0) return res.json({ error: 'Invalid owo' });
-    const { paymentInstructions, finalContribution, descriptions } = computeInstructions(participantsRes.rows);
-    res.json({ paymentInstructions, finalContribution, descriptions });
+    const { paymentInstructions, finalContribution, descriptions, balanceChange } = computeInstructions(participantsRes.rows);
+    res.json({ paymentInstructions, finalContribution, descriptions, balanceChange });
   } catch (err) {
     console.error('Error in /discord:', err);
     res.json({ error: 'Invalid owo', details: err && err.message ? err.message : err });

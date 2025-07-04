@@ -155,29 +155,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     let resultHTML = '<h3 class="font-semibold text-orange-600 mb-2">Payment Instructions:</h3>';
     if (transactions.length === 0) {
-      resultHTML += '<li class="text-gray-600">Everyone has paid equally - no payments needed!</li>';
+      resultHTML += '<li class="text-gray-600 whitespace-nowrap overflow-x-auto w-full">Everyone has paid equally - no payments needed!</li>';
     } else {
-      resultHTML += '<ul class="list-disc pl-6 space-y-1">' +
-        transactions.map(transaction => {
-          // transaction is like "Alice pays $10.00 to Bob"
-          const match = transaction.match(/^(.*?) pays \$(.*?) to (.*)$/);
-          if (match) {
-            const from = match[1];
-            const amount = match[2];
-            const to = match[3];
-            return `<li><span class='font-semibold text-red-700'>${from}</span> pays <span class='font-bold text-green-700'>$${amount}</span> to <span class='font-semibold text-green-700'>${to}</span></li>`;
-          }
-          return `<li>${transaction}</li>`;
-        }).join('') + '</ul>';
+      resultHTML += transactions.map(transaction => 
+        `<li class="py-1 text-gray-800 whitespace-nowrap overflow-x-auto w-full">${transaction}</li>`
+      ).join('');
     }
-    // Calculate avg for correct balance
-    const avg = total / participants.length;
-    resultHTML += '<h3 class="font-semibold text-orange-600 mt-4 mb-2">Final Status:</h3>';
-    resultHTML += participants.map(p => {
-      const description = p.description ? ` (${p.description})` : '';
-      const finalBalance = (p.amount - avg);
-      const color = finalBalance < 0 ? 'text-red-600' : 'text-green-600';
-      return `<li class="py-1 break-words max-w-[300px]"><strong>${p.name}</strong>${description}: contributed $${Number(p.amount).toFixed(2)} → final balance <span class="${color}">$${finalBalance.toFixed(2)}</span></li>`;
+    resultHTML += '<h3 class="font-semibold text-orange-600 mt-4 mb-2">Final Contribution:</h3>';
+    resultHTML += Object.keys(owe).map(person => {
+      const originalAmount = participants.find(p => p.name === person).amount;
+      const participant = getCurrentParticipants().find(p => p.name === person);
+      const description = participant && participant.description ? ` (${participant.description})` : '';
+      return `<li class="py-1 whitespace-nowrap overflow-x-auto w-full"><strong>${person}</strong>${description}: contributed $${originalAmount.toFixed(2)} → final contribution $${pp.toFixed(3)}</li>`;
+    }).join('');
+    // Add new section for balance change
+    resultHTML += '<h3 class="font-semibold text-orange-600 mt-4 mb-2">Balance Change:</h3>';
+    resultHTML += Object.keys(owe).map(person => {
+      const originalAmount = participants.find(p => p.name === person).amount;
+      const balanceChange = (originalAmount - pp).toFixed(3);
+      return `<li class="py-1 whitespace-nowrap overflow-x-auto w-full"><strong>${person}</strong>: ${balanceChange >= 0 ? '+' : ''}${balanceChange}</li>`;
     }).join('');
     // Always add Save button under Final Status
     resultHTML += '<div class="mt-4 flex justify-end"><button id="saveFinalStatusBtn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">Save</button></div>';
