@@ -31,17 +31,45 @@ async function loadSplits() {
       const id = this.getAttribute('data-id');
       const title = this.getAttribute('data-title');
       const created = this.getAttribute('data-created');
-      // Fetch split participants
+      // Fetch split participants for the correct split id
       let details = '';
       try {
-        const res = await fetch(`/api/newSplit/latest`); // fallback: show latest split
+        const res = await fetch(`/api/splits/${id}`);
         if (res.ok) {
           const split = await res.json();
-          if (split && split.result && split.title === title) {
+          if (split && split.result) {
             details = '<div class="mb-2 font-medium">Participants:</div>' +
-              '<ul class="mb-2 pl-4 list-disc">' +
-              split.result.map(p => `<li>${p.name}: Paid $${p.paid}, Balance $${p.balance}${p.description ? `, ${p.description}` : ''}</li>`).join('') +
-              '</ul>';
+              '<table class="min-w-full mb-2 text-sm"><thead><tr>' +
+              '<th class="px-2 py-1 text-left">Name</th>' +
+              '<th class="px-2 py-1 text-left">Paid</th>' +
+              '<th class="px-2 py-1 text-left">Balance</th>' +
+              '<th class="px-2 py-1 text-left">Description</th>' +
+              '</tr></thead><tbody>' +
+              split.result.map(p => {
+                const color = p.balance < 0 ? 'text-red-600' : 'text-green-600';
+                return `<tr><td class="px-2 py-1">${p.name}</td><td class="px-2 py-1">$${Number(p.paid).toFixed(2)}</td><td class="px-2 py-1 font-semibold ${color}">${p.balance < 0 ? 'owes' : 'gets'} $${Math.abs(Number(p.balance)).toFixed(2)}</td><td class="px-2 py-1">${p.description || ''}</td></tr>`;
+              }).join('') +
+              '</tbody></table>';
+            // Add payment instructions
+            let balances = split.result.map(p => ({ name: p.name, balance: Number(p.balance) }));
+            let d = balances.filter(p => p.balance < -0.01).map(p => ({ ...p }));
+            let c = balances.filter(p => p.balance > 0.01).map(p => ({ ...p }));
+            let i = 0, j = 0;
+            let debts = [];
+            while (i < d.length && j < c.length) {
+              let pay = Math.min(Math.abs(d[i].balance), c[j].balance);
+              debts.push(`<li><span class='font-semibold text-red-700'>${d[i].name}</span> pays <span class='font-bold text-green-700'>$${pay.toFixed(2)}</span> to <span class='font-semibold text-green-700'>${c[j].name}</span></li>`);
+              d[i].balance += pay;
+              c[j].balance -= pay;
+              if (Math.abs(d[i].balance) < 0.01) i++;
+              if (c[j].balance < 0.01) j++;
+            }
+            details += '<div class="mt-4 mb-2 text-sm text-gray-700 font-medium">Payment Instructions:</div>';
+            if (debts.length > 0) {
+              details += `<ul class='list-disc pl-6 space-y-1'>${debts.join('')}</ul>`;
+            } else {
+              details += '<div class="text-gray-600">Everyone has paid equally - no payments needed!</div>';
+            }
           }
         }
       } catch {}

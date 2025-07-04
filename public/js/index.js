@@ -19,19 +19,21 @@ async function loadLatestSplit() {
   // Payment instructions
   let paymentInstructions = '';
   if (data.result && data.result.length > 1) {
-    // Calculate payment instructions like newSplit
-    const debtors = data.result.filter(p => p.balance < 0).map(p => ({ ...p }));
-    const creditors = data.result.filter(p => p.balance > 0).map(p => ({ ...p }));
+    // Use backend-provided balance for payment instructions
+    let balances = data.result.map(p => ({ name: p.name, balance: Number(p.balance) }));
     paymentInstructions = '<div class="mt-4 mb-2 text-sm text-gray-700 font-medium">Payment Instructions:</div>';
     let debts = [];
+    // Clone balances to avoid mutating original
+    let d = balances.filter(p => p.balance < -0.01).map(p => ({ ...p }));
+    let c = balances.filter(p => p.balance > 0.01).map(p => ({ ...p }));
     let i = 0, j = 0;
-    while (i < debtors.length && j < creditors.length) {
-      let pay = Math.min(Math.abs(debtors[i].balance), creditors[j].balance);
-      debts.push(`<li><span class='font-semibold text-red-700'>${debtors[i].name}</span> pays <span class='font-semibold text-green-700'>$${pay.toFixed(2)}</span> to <span class='font-semibold text-green-700'>${creditors[j].name}</span></li>`);
-      debtors[i].balance += pay;
-      creditors[j].balance -= pay;
-      if (Math.abs(debtors[i].balance) < 0.01) i++;
-      if (creditors[j].balance < 0.01) j++;
+    while (i < d.length && j < c.length) {
+      let pay = Math.min(Math.abs(d[i].balance), c[j].balance);
+      debts.push(`<li><span class='font-semibold text-red-700'>${d[i].name}</span> pays <span class='font-semibold text-green-700'>$${pay.toFixed(2)}</span> to <span class='font-semibold text-green-700'>${c[j].name}</span></li>`);
+      d[i].balance += pay;
+      c[j].balance -= pay;
+      if (Math.abs(d[i].balance) < 0.01) i++;
+      if (c[j].balance < 0.01) j++;
     }
     if (debts.length > 0) {
       paymentInstructions += `<ul class='list-disc pl-6 space-y-1'>${debts.join('')}</ul>`;
@@ -56,7 +58,7 @@ async function loadLatestSplit() {
               <button class="person-info text-left text-orange-700 hover:underline" data-name="${p.name}" data-paid="${p.paid}" data-balance="${p.balance}">${p.name}</button>
             </td>
             <td class="px-4 py-2">$${Number(p.paid).toFixed(2)}</td>
-            <td class="px-4 py-2 font-semibold ${color}">${p.balance < 0 ? 'owes' : 'gets'} $${Math.abs(p.balance)}</td>
+            <td class="px-4 py-2 font-semibold ${color}">${p.balance < 0 ? 'owes' : 'gets'} $${Math.abs(Number(p.balance)).toFixed(2)}</td>
           </tr>`;
         }).join('')}
       </tbody>
