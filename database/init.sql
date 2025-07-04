@@ -1,0 +1,19 @@
+CREATE TABLE IF NOT EXISTS people (
+  id SERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  phone TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS splits (
+  id SERIAL PRIMARY KEY,
+  title TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS split_participants (
+  id SERIAL PRIMARY KEY,
+  split_id INTEGER REFERENCES splits(id),
+  person_name TEXT NOT NULL,
+  paid NUMERIC NOT NULL,
+  balance NUMERIC NOT NULL
+);
