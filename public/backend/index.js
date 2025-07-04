@@ -3,7 +3,7 @@ const cors = require('cors');
 const { Pool } = require('pg');
 const peopleRouter = require('./routes/people');
 const splitsRouter = require('./routes/splits');
-const newSplitRouter = require('./routes/newSplit');
+const discordRouter = require('./routes/discord');
 
 const app = express();
 app.use(cors());
@@ -23,9 +23,9 @@ app.use('/splits', (req, res, next) => {
   next();
 }, splitsRouter);
 
-app.use('/newSplit', (req, res, next) => {
+app.use('/discord', (req, res, next) => {
   req.pool = pool;
   next();
-}, newSplitRouter);
+}, discordRouter);
 
 module.exports = app;

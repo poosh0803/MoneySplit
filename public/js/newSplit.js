@@ -166,7 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const originalAmount = participants.find(p => p.name === person).amount;
       const participant = getCurrentParticipants().find(p => p.name === person);
       const description = participant && participant.description ? ` (${participant.description})` : '';
-      return `<li class="py-1 break-words max-w-[300px]"><strong>${person}</strong>${description}: contributed $${originalAmount.toFixed(2)} → final balance $${owe[person].toFixed(3)}</li>`;
+      return `<li class="py-1 break-words whitespace-nowrap overflow-x-auto max-w-full"><strong>${person}</strong>${description}: contributed $${originalAmount.toFixed(2)} → final contribution $${pp.toFixed(3)}</li>`;
     }).join('');
     // Always add Save button under Final Status
     resultHTML += '<div class="mt-4 flex justify-end"><button id="saveFinalStatusBtn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">Save</button></div>';
