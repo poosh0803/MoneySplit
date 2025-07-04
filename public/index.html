@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Money Splitter</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans">
+
+  <!-- Navbar -->
+  <nav class="bg-orange-500 text-white shadow-md">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="text-xl font-bold">💸 Money Splitter</div>
+      <ul class="flex space-x-4 text-sm font-medium">
+        <li><a href="index.html" class="hover:underline">Latest Split</a></li>
+        <li><a href="newSplit.html" class="hover:underline">New Split</a></li>
+        <li><a href="splits.html" class="hover:underline">Splits</a></li>
+        <li><a href="people.html" class="hover:underline">People</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <main class="max-w-2xl mx-auto p-6">
+
+    <!-- Latest Split Section -->
+    <section id="latest" class="bg-white p-4 rounded shadow">
+      <h2 class="text-xl font-semibold text-orange-600 mb-4">Latest Split Results</h2>
+      <div id="latestTitle" class="font-medium mb-2"></div>
+      <ul id="resultList" class="space-y-2"></ul>
+      <div id="noSplit" class="text-gray-500 text-sm"></div>
+    </section>
+  </main>
+
+  <!-- Script -->
+  <script>
+    async function loadLatestSplit() {
+      // Fetch latest split from backend
+      const res = await fetch('/api/split/latest');
+      if (!res.ok) {
+        document.getElementById('noSplit').textContent = 'Failed to load latest split.';
+        return;
+      }
+      const data = await res.json();
+      if (!data || !data.result || !data.title) {
+        document.getElementById('noSplit').textContent = 'No split found. Create one!';
+        return;
+      }
+      document.getElementById('latestTitle').textContent = data.title;
+      const resultHTML = data.result.map(p => {
+        const color = p.balance < 0 ? 'text-red-600' : 'text-green-600';
+        return `<li><strong>${p.name}</strong>: paid $${p.paid.toFixed(2)} → <span class="${color}">${p.balance < 0 ? 'owes' : 'gets'} $${Math.abs(p.balance)}</span></li>`;
+      }).join('');
+      document.getElementById('resultList').innerHTML = resultHTML;
+      document.getElementById('noSplit').textContent = '';
+    }
+
+    loadLatestSplit();
+  </script>
+</body>
+</html>
+  <script>
+    document.getElementById('caseForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const raw = document.getElementById('participants').value;
+      const lines = raw.split('\n').map(line => {
+        const [name, amount] = line.split(':').map(str => str.trim());
+        return { name, amount: parseFloat(amount) };
+      });
+
+      const response = await fetch('/api/split', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ participants: lines })
+      });
+
+      const data = await response.json();
+      if (!data.result) return alert('Error in response');
+
+      const resultHTML = data.result.map(p => {
+        const color = p.balance < 0 ? 'text-red-600' : 'text-green-600';
+        return `<li><strong>${p.name}</strong>: paid $${p.paid.toFixed(2)} → <span class="${color}">${p.balance < 0 ? 'owes' : 'gets'} $${Math.abs(p.balance)}</span></li>`;
+      }).join('');
+
+      document.getElementById('resultList').innerHTML = resultHTML;
+      document.getElementById('latest').classList.remove('hidden');
+    });
+  </script>
+</body>
+</html>

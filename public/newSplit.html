@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Money Splitter</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans">
+
+  <!-- Navbar -->
+  <nav class="bg-orange-500 text-white shadow-md">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="text-xl font-bold">💸 Money Splitter</div>
+      <ul class="flex space-x-4 text-sm font-medium">
+        <li><a href="index.html" class="hover:underline">Latest Split</a></li>
+        <li><a href="newSplit.html" class="hover:underline">New Split</a></li>
+        <li><a href="splits.html" class="hover:underline">Splits</a></li>
+        <li><a href="people.html" class="hover:underline">People</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <main class="max-w-2xl mx-auto p-6">
+
+    <!-- New Split Section -->
+    <section id="new" class="mb-6 bg-white p-4 rounded shadow">
+      <h2 class="text-xl font-semibold text-orange-600 mb-2">Create New Split</h2>
+      <form id="caseForm" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium">Case Title</label>
+          <input type="text" id="caseTitle" class="w-full border border-gray-300 p-2 rounded" required>
+        </div>
+        <div>
+          <label class="block text-sm font-medium">Participants</label>
+          <textarea id="participants" class="w-full border border-gray-300 p-2 rounded" rows="4" placeholder="A: 10\nB: 20" required></textarea>
+        </div>
+        <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded">Calculate</button>
+      </form>
+    </section>
+
+    <!-- Results Section -->
+    <section id="latest" class="hidden bg-white p-4 rounded shadow">
+      <h2 class="text-xl font-semibold text-orange-600 mb-4">Latest Split Results</h2>
+      <ul id="resultList" class="space-y-2"></ul>
+    </section>
+
+    <!-- Placeholder for Splits -->
+    <section id="splits" class="mb-6 bg-white p-4 rounded shadow">
+      <h2 class="text-xl font-semibold text-orange-600 mb-2">All Splits</h2>
+      <p class="text-gray-600 text-sm">Coming soon...</p>
+    </section>
+
+    <!-- Placeholder for People -->
+    <section id="people" class="mb-6 bg-white p-4 rounded shadow">
+      <h2 class="text-xl font-semibold text-orange-600 mb-2">People</h2>
+      <p class="text-gray-600 text-sm">Coming soon...</p>
+    </section>
+  </main>
+
+  <!-- Script -->
+  <script>
+    document.getElementById('caseForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const raw = document.getElementById('participants').value;
+      const lines = raw.split('\n').map(line => {
+        const [name, amount] = line.split(':').map(str => str.trim());
+        return { name, amount: parseFloat(amount) };
+      });
+
+      const response = await fetch('/api/split', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ participants: lines })
+      });
+
+      const data = await response.json();
+      if (!data.result) return alert('Error in response');
+
+      const resultHTML = data.result.map(p => {
+        const color = p.balance < 0 ? 'text-red-600' : 'text-green-600';
+        return `<li><strong>${p.name}</strong>: paid $${p.paid.toFixed(2)} → <span class="${color}">${p.balance < 0 ? 'owes' : 'gets'} $${Math.abs(p.balance)}</span></li>`;
+      }).join('');
+
+      document.getElementById('resultList').innerHTML = resultHTML;
+      document.getElementById('latest').classList.remove('hidden');
+    });
+  </script>
+</body>
+</html>

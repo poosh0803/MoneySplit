@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Splits - Money Splitter</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans">
+
+  <!-- Navbar -->
+  <nav class="bg-orange-500 text-white shadow-md">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="text-xl font-bold">💸 Money Splitter</div>
+      <ul class="flex space-x-4 text-sm font-medium">
+        <li><a href="index.html" class="hover:underline">Latest Split</a></li>
+        <li><a href="newSplit.html" class="hover:underline">New Split</a></li>
+        <li><a href="splits.html" class="hover:underline">Splits</a></li>
+        <li><a href="people.html" class="hover:underline">People</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="max-w-2xl mx-auto p-6">
+    <!-- Splits List Section -->
+    <section class="bg-white p-4 rounded shadow">
+      <h2 class="text-xl font-semibold text-orange-600 mb-2">Split History</h2>
+      <ul id="splitsList" class="space-y-2"></ul>
+      <div id="noSplits" class="text-gray-500 text-sm"></div>
+    </section>
+  </main>
+
+  <script>
+    async function loadSplits() {
+      const res = await fetch('/api/splits');
+      if (!res.ok) {
+        document.getElementById('noSplits').textContent = 'Failed to load splits.';
+        return;
+      }
+      const data = await res.json();
+      if (!data || !data.length) {
+        document.getElementById('noSplits').textContent = 'No splits found.';
+        document.getElementById('splitsList').innerHTML = '';
+        return;
+      }
+      document.getElementById('noSplits').textContent = '';
+      document.getElementById('splitsList').innerHTML = data.map(s =>
+        `<li>
+          <strong>${s.title}</strong> 
+          <span class="text-gray-500 text-xs">(${new Date(s.created_at).toLocaleString()})</span>
+          <!-- Placeholder for detail link -->
+        </li>`
+      ).join('');
+    }
+
+    loadSplits();
+  </script>
+</body>
+</html>

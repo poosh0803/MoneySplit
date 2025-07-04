@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>People - Money Splitter</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans">
+
+  <!-- Navbar -->
+  <nav class="bg-orange-500 text-white shadow-md">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="text-xl font-bold">💸 Money Splitter</div>
+      <ul class="flex space-x-4 text-sm font-medium">
+        <li><a href="index.html" class="hover:underline">Latest Split</a></li>
+        <li><a href="newSplit.html" class="hover:underline">New Split</a></li>
+        <li><a href="splits.html" class="hover:underline">Splits</a></li>
+        <li><a href="people.html" class="hover:underline">People</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="max-w-2xl mx-auto p-6">
+    <!-- Add Person Section -->
+    <section class="mb-6 bg-white p-4 rounded shadow">
+      <h2 class="text-xl font-semibold text-orange-600 mb-2">Add New Person</h2>
+      <form id="personForm" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium">Name</label>
+          <input type="text" id="personName" class="w-full border border-gray-300 p-2 rounded" required>
+        </div>
+        <div>
+          <label class="block text-sm font-medium">Phone Number</label>
+          <input type="text" id="personPhone" class="w-full border border-gray-300 p-2 rounded" required>
+        </div>
+        <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded">Add Person</button>
+      </form>
+    </section>
+
+    <!-- People List Section -->
+    <section class="bg-white p-4 rounded shadow">
+      <h2 class="text-xl font-semibold text-orange-600 mb-2">People</h2>
+      <ul id="peopleList" class="space-y-2"></ul>
+      <div id="noPeople" class="text-gray-500 text-sm"></div>
+    </section>
+  </main>
+
+  <script>
+    async function loadPeople() {
+      const res = await fetch('/api/people');
+      if (!res.ok) {
+        document.getElementById('noPeople').textContent = 'Failed to load people.';
+        return;
+      }
+      const data = await res.json();
+      if (!data || !data.length) {
+        document.getElementById('noPeople').textContent = 'No people found. Add one!';
+        document.getElementById('peopleList').innerHTML = '';
+        return;
+      }
+      document.getElementById('noPeople').textContent = '';
+      document.getElementById('peopleList').innerHTML = data.map(p =>
+        `<li><strong>${p.name}</strong> (${p.phone})</li>`
+      ).join('');
+    }
+
+    document.getElementById('personForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const name = document.getElementById('personName').value.trim();
+      const phone = document.getElementById('personPhone').value.trim();
+      if (!name || !phone) return;
+      const res = await fetch('/api/people', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, phone })
+      });
+      if (res.ok) {
+        document.getElementById('personForm').reset();
+        loadPeople();
+      } else {
+        alert('Failed to add person.');
+      }
+    });
+
+    loadPeople();
+  </script>
+</body>
+</html>
