@@ -8,7 +8,7 @@ router.get('/latest', async (req, res) => {
     if (splitRes.rows.length === 0) return res.json({});
     const split = splitRes.rows[0];
     const participantsRes = await req.pool.query(
-      'SELECT person_name AS name, paid, balance FROM split_participants WHERE split_id = $1',
+      'SELECT person_name AS name, paid, balance, description FROM split_participants WHERE split_id = $1',
       [split.id]
     );
     res.json({
@@ -33,7 +33,8 @@ router.post('/', async (req, res) => {
   const result = participants.map(p => ({
     name: p.name,
     paid: p.amount,
-    balance: +(p.amount - avg).toFixed(2)
+    balance: +(p.amount - avg).toFixed(2),
+    description: p.description || ''
   }));
 
   try {
@@ -44,8 +45,8 @@ router.post('/', async (req, res) => {
     const splitId = splitRes.rows[0].id;
     for (const p of result) {
       await req.pool.query(
-        'INSERT INTO split_participants (split_id, person_name, paid, balance) VALUES ($1, $2, $3, $4)',
-        [splitId, p.name, p.paid, p.balance]
+        'INSERT INTO split_participants (split_id, person_name, paid, balance, description) VALUES ($1, $2, $3, $4, $5)',
+        [splitId, p.name, p.paid, p.balance, p.description]
       );
     }
     res.status(201).json({ ok: true });

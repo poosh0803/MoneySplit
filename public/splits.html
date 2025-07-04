@@ -25,35 +25,22 @@
     <!-- Splits List Section -->
     <section class="bg-white p-4 rounded shadow">
       <h2 class="text-xl font-semibold text-orange-600 mb-2">Split History</h2>
-      <ul id="splitsList" class="space-y-2"></ul>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead>
+            <tr>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
+              <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Delete</th>
+            </tr>
+          </thead>
+          <tbody id="splitsList"></tbody>
+        </table>
+      </div>
       <div id="noSplits" class="text-gray-500 text-sm"></div>
     </section>
   </main>
 
-  <script>
-    async function loadSplits() {
-      const res = await fetch('/api/splits');
-      if (!res.ok) {
-        document.getElementById('noSplits').textContent = 'Failed to load splits.';
-        return;
-      }
-      const data = await res.json();
-      if (!data || !data.length) {
-        document.getElementById('noSplits').textContent = 'No splits found.';
-        document.getElementById('splitsList').innerHTML = '';
-        return;
-      }
-      document.getElementById('noSplits').textContent = '';
-      document.getElementById('splitsList').innerHTML = data.map(s =>
-        `<li>
-          <strong>${s.title}</strong> 
-          <span class="text-gray-500 text-xs">(${new Date(s.created_at).toLocaleString()})</span>
-          <!-- Placeholder for detail link -->
-        </li>`
-      ).join('');
-    }
-
-    loadSplits();
-  </script>
+  <script src="js/splits.js"></script>
 </body>
 </html>

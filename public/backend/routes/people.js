@@ -35,4 +35,18 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+// Edit a person by id
+router.put('/:id', async (req, res) => {
+  const { id } = req.params;
+  const { name, phone } = req.body;
+  if (!name || !phone) return res.status(400).json({ error: 'Missing name or phone' });
+  try {
+    const result = await req.pool.query('UPDATE people SET name = $1, phone = $2 WHERE id = $3', [name, phone, id]);
+    if (result.rowCount === 0) return res.status(404).json({ error: 'Person not found' });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
 module.exports = router;

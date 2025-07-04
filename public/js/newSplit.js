@@ -13,10 +13,14 @@ async function fetchAllPeople() {
 
 window.allPeople = [];
 
-function createMainTableRow(name, amount = '0') {
+function createMainTableRow(name, amount = '0', description = '') {
   return `
     <tr>
       <td class="py-2 px-3 border-b border-gray-200 font-medium break-words max-w-[200px]">${name}</td>
+      <td class="py-2 px-3 border-b border-gray-200">
+        <input type="text" class="participant-description-input w-full border border-gray-300 rounded px-2 py-1 text-sm" 
+               data-name="${name}" value="${description}" placeholder="What did they pay for?">
+      </td>
       <td class="py-2 px-3 border-b border-gray-200">
         <div class="flex items-center">
           <span class="text-gray-500 mr-1">$</span>
@@ -41,9 +45,12 @@ function getCurrentParticipants() {
   const participants = [];
   const inputs = document.querySelectorAll('.participant-amount-input');
   inputs.forEach(input => {
+    const name = input.dataset.name;
+    const descriptionInput = document.querySelector(`.participant-description-input[data-name="${name}"]`);
     participants.push({
-      name: input.dataset.name,
-      amount: input.value || '0'
+      name: name,
+      amount: input.value || '0',
+      description: descriptionInput ? descriptionInput.value : ''
     });
   });
   return participants;
@@ -74,16 +81,23 @@ function addParticipant() {
 function saveParticipants() {
   const checkboxes = document.querySelectorAll('.participant-checkbox:checked');
   const currentParticipants = getCurrentParticipants();
-  const participantAmounts = {};
+  const participantData = {};
   currentParticipants.forEach(p => {
-    participantAmounts[p.name] = p.amount;
+    participantData[p.name] = {
+      amount: p.amount,
+      description: p.description
+    };
   });
   const tableBody = document.getElementById('participantsTable');
   const selectedParticipants = [];
   checkboxes.forEach(checkbox => {
     const name = checkbox.dataset.name;
-    const amount = participantAmounts[name] || '0';
-    selectedParticipants.push({ name, amount });
+    const data = participantData[name] || { amount: '0', description: '' };
+    selectedParticipants.push({ 
+      name, 
+      amount: data.amount, 
+      description: data.description 
+    });
   });
   if (selectedParticipants.length === 0) {
     document.getElementById('noParticipants').style.display = 'block';
@@ -91,7 +105,7 @@ function saveParticipants() {
   } else {
     document.getElementById('noParticipants').style.display = 'none';
     const tableHTML = selectedParticipants.map(p => 
-      createMainTableRow(p.name, p.amount)
+      createMainTableRow(p.name, p.amount, p.description)
     ).join('');
     tableBody.innerHTML = tableHTML;
   }
@@ -150,9 +164,44 @@ document.addEventListener('DOMContentLoaded', () => {
     resultHTML += '<h3 class="font-semibold text-orange-600 mt-4 mb-2">Final Status:</h3>';
     resultHTML += Object.keys(owe).map(person => {
       const originalAmount = participants.find(p => p.name === person).amount;
-      return `<li class="py-1 break-words max-w-[300px]"><strong>${person}</strong>: contributed $${originalAmount.toFixed(2)} → final balance $${owe[person].toFixed(3)}</li>`;
+      const participant = getCurrentParticipants().find(p => p.name === person);
+      const description = participant && participant.description ? ` (${participant.description})` : '';
+      return `<li class="py-1 break-words max-w-[300px]"><strong>${person}</strong>${description}: contributed $${originalAmount.toFixed(2)} → final balance $${owe[person].toFixed(3)}</li>`;
     }).join('');
+    // Always add Save button under Final Status
+    resultHTML += '<div class="mt-4 flex justify-end"><button id="saveFinalStatusBtn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">Save</button></div>';
     document.getElementById('resultList').innerHTML = resultHTML;
     document.getElementById('latest').classList.remove('hidden');
+    // Attach event listener for Save button
+    document.getElementById('saveFinalStatusBtn').addEventListener('click', async function() {
+      const caseTitle = document.getElementById('caseTitle').value;
+      const participantsData = getCurrentParticipants().map(p => ({
+        name: p.name,
+        amount: parseFloat(p.amount) || 0,
+        description: p.description || ''
+      }));
+      const splitData = {
+        title: caseTitle,
+        participants: participantsData,
+        transactions: transactions,
+        finalStatus: Object.keys(owe).map(person => ({
+          name: person,
+          contributed: participants.find(p => p.name === person).amount,
+          description: (getCurrentParticipants().find(p => p.name === person) || {}).description || '',
+          balance: owe[person]
+        }))
+      };
+      try {
+        const res = await fetch('/api/splits', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(splitData)
+        });
+        if (!res.ok) throw new Error('Failed to save split');
+        alert('Split saved successfully!');
+      } catch (err) {
+        alert('Error saving split: ' + err.message);
+      }
+    });
   });
 });

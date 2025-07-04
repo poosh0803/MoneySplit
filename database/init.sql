@@ -13,7 +13,9 @@ CREATE TABLE IF NOT EXISTS splits (
 CREATE TABLE IF NOT EXISTS split_participants (
   id SERIAL PRIMARY KEY,
   split_id INTEGER REFERENCES splits(id),
+  person_id INTEGER REFERENCES people(id),
   person_name TEXT NOT NULL,
   paid NUMERIC NOT NULL,
-  balance NUMERIC NOT NULL
+  balance NUMERIC NOT NULL,
+  description TEXT
 );
