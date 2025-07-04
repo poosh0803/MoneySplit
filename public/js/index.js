@@ -36,9 +36,9 @@ async function loadLatestSplit() {
       if (c[j].balance < 0.01) j++;
     }
     if (debts.length > 0) {
-      paymentInstructions += `<ul class='list-disc pl-6 space-y-1'>${debts.join('')}</ul>`;
+      paymentInstructions += `<ul class='list-disc pl-6 space-y-1'>${debts.map(debt => `<li class="whitespace-nowrap overflow-x-auto w-full">${debt.replace('<li>','').replace('</li>','')}</li>`).join('')}</ul>`;
     } else {
-      paymentInstructions += '<div class="text-gray-600">Everyone has paid equally - no payments needed!</div>';
+      paymentInstructions += '<div class="text-gray-600 whitespace-nowrap overflow-x-auto w-full">Everyone has paid equally - no payments needed!</div>';
     }
   }
   const resultHTML = `
@@ -69,7 +69,7 @@ async function loadLatestSplit() {
       ${data.result.map(p => {
         const color = p.balance < 0 ? 'text-red-600' : 'text-green-600';
         const desc = p.description ? ` (${p.description})` : '';
-        return `<li class="py-1 break-words max-w-[300px]"><strong>${p.name}</strong>${desc}: contributed $${Number(p.paid).toFixed(2)} → final balance <span class="${color}">$${Number(p.balance).toFixed(2)}</span></li>`;
+        return `<li class="py-1 whitespace-nowrap overflow-x-auto w-full"><strong>${p.name}</strong>${desc}: contributed $${Number(p.paid).toFixed(2)} → final balance <span class="${color}">$${Number(p.balance).toFixed(2)}</span></li>`;
       }).join('')}
     </ul>
   `;
