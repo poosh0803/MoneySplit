@@ -1,6 +1,6 @@
 async function loadLatestSplit() {
   // Fetch latest split from backend
-  const res = await fetch('/api/split/latest');
+  const res = await fetch('/api/newSplit/latest');
   if (!res.ok) {
     document.getElementById('noSplit').textContent = 'Failed to load latest split.';
     return;

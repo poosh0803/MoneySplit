@@ -34,7 +34,7 @@ async function loadSplits() {
       // Fetch split participants
       let details = '';
       try {
-        const res = await fetch(`/api/split/latest`); // fallback: show latest split
+        const res = await fetch(`/api/newSplit/latest`); // fallback: show latest split
         if (res.ok) {
           const split = await res.json();
           if (split && split.result && split.title === title) {

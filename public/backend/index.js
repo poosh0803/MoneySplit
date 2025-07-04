@@ -23,7 +23,7 @@ app.use('/splits', (req, res, next) => {
   next();
 }, splitsRouter);
 
-app.use('/split', (req, res, next) => {
+app.use('/newSplit', (req, res, next) => {
   req.pool = pool;
   next();
 }, newSplitRouter);
