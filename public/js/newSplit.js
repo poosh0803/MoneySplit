@@ -184,11 +184,12 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('saveFinalStatusBtn').addEventListener('click', async function() {
       const caseTitle = document.getElementById('caseTitle').value;
       // Prepare participantsData with correct balance
+      const pp = total / Object.keys(owe).length;
       const participantsData = getCurrentParticipants().map(p => ({
         name: p.name,
         amount: parseFloat(p.amount) || 0,
         description: p.description || '',
-        balance: (parseFloat(p.amount) || 0) - avg
+        balance: (parseFloat(p.amount) || 0) - pp
       }));
       const splitData = {
         title: caseTitle,

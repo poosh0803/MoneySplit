@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 // Get latest split
-router.get('/latest', async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const splitRes = await req.pool.query('SELECT id, title, created_at FROM splits ORDER BY created_at DESC LIMIT 1');
     if (splitRes.rows.length === 0) return res.json({});
