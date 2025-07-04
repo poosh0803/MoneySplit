@@ -6,15 +6,36 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     const data = await res.json();
+    const peopleList = document.getElementById('peopleList');
     if (!data || !data.length) {
       document.getElementById('noPeople').textContent = 'No people found. Add one!';
-      document.getElementById('peopleList').innerHTML = '';
+      peopleList.innerHTML = '';
       return;
     }
     document.getElementById('noPeople').textContent = '';
-    document.getElementById('peopleList').innerHTML = data.map(p =>
-      `<li><strong>${p.name}</strong> (${p.phone})</li>`
+    peopleList.innerHTML = data.map(p =>
+      `<tr class="hover:bg-gray-50">
+        <td class="px-4 py-2">${p.name}</td>
+        <td class="px-4 py-2">${p.phone}</td>
+        <td class="px-4 py-2 text-right">
+          <button data-id="${p.id}" class="delete-btn bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded transition-colors">Delete</button>
+        </td>
+      </tr>`
     ).join('');
+
+    // Add delete event listeners
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+      btn.addEventListener('click', async function() {
+        if (!confirm('Delete this person?')) return;
+        const id = this.getAttribute('data-id');
+        const res = await fetch(`/api/people/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+          loadPeople();
+        } else {
+          alert('Failed to delete person.');
+        }
+      });
+    });
   }
 
   document.getElementById('personForm').addEventListener('submit', async function(e) {
@@ -31,14 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('personForm').reset();
       loadPeople();
     } else {
-      let msg = 'Failed to add person.';
-      try {
-        const err = await res.json();
-        if (err && err.error) msg += ' ' + err.error;
-      } catch {}
-      alert(msg);
-      // Optionally log for debugging
-      console.error('Add person error:', res.status, res.statusText);
+      alert('Failed to add person.');
     }
   });
 

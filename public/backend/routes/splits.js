@@ -1,5 +1,5 @@
-import { Router } from 'express';
-const router = Router();
+const express = require('express');
+const router = express.Router();
 
 // Get all splits
 router.get('/', async (req, res) => {
@@ -11,4 +11,4 @@ router.get('/', async (req, res) => {
   }
 });
 
-export default router;
+module.exports = router;

@@ -1,5 +1,5 @@
-import { Router } from 'express';
-const router = Router();
+const express = require('express');
+const router = express.Router();
 
 // Get all people
 router.get('/', async (req, res) => {
@@ -23,4 +23,16 @@ router.post('/', async (req, res) => {
   }
 });
 
-export default router;
+// Delete a person by id
+router.delete('/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await req.pool.query('DELETE FROM people WHERE id = $1', [id]);
+    if (result.rowCount === 0) return res.status(404).json({ error: 'Person not found' });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+module.exports = router;

@@ -41,48 +41,21 @@
     <!-- People List Section -->
     <section class="bg-white p-4 rounded shadow">
       <h2 class="text-xl font-semibold text-orange-600 mb-2">People</h2>
-      <ul id="peopleList" class="space-y-2"></ul>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead>
+            <tr>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
+              <th class="px-4 py-2"></th>
+            </tr>
+          </thead>
+          <tbody id="peopleList"></tbody>
+        </table>
+      </div>
       <div id="noPeople" class="text-gray-500 text-sm"></div>
     </section>
   </main>
-  <script>
-    async function loadPeople() {
-      const res = await fetch('/api/people');
-      if (!res.ok) {
-        document.getElementById('noPeople').textContent = 'Failed to load people.';
-        return;
-      }
-      const data = await res.json();
-      if (!data || !data.length) {
-        document.getElementById('noPeople').textContent = 'No people found. Add one!';
-        document.getElementById('peopleList').innerHTML = '';
-        return;
-      }
-      document.getElementById('noPeople').textContent = '';
-      document.getElementById('peopleList').innerHTML = data.map(p =>
-        `<li><strong>${p.name}</strong> (${p.phone})</li>`
-      ).join('');
-    }
-
-    document.getElementById('personForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const name = document.getElementById('personName').value.trim();
-      const phone = document.getElementById('personPhone').value.trim();
-      if (!name || !phone) return;
-      const res = await fetch('/api/people', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, phone })
-      });
-      if (res.ok) {
-        document.getElementById('personForm').reset();
-        loadPeople();
-      } else {
-        alert('Failed to add person.');
-      }
-    });
-
-    loadPeople();
-  </script>
+  <script src="js/people.js"></script>
 </body>
 </html>

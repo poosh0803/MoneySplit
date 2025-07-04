@@ -1,5 +1,5 @@
-import { Router } from 'express';
-const router = Router();
+const express = require('express');
+const router = express.Router();
 
 // Get latest split
 router.get('/latest', async (req, res) => {
@@ -38,7 +38,7 @@ router.post('/', async (req, res) => {
 
   try {
     const splitRes = await req.pool.query(
-      'INSERT INTO splits (title) VALUES ($1) RETURNING id, created_at',
+      'INSERT INTO splits (title) VALUES ($1) RETURNING id',
       [title]
     );
     const splitId = splitRes.rows[0].id;
@@ -48,10 +48,10 @@ router.post('/', async (req, res) => {
         [splitId, p.name, p.paid, p.balance]
       );
     }
-    res.json({ result });
+    res.status(201).json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: 'Database error' });
   }
 });
 
-export default router;
+module.exports = router;

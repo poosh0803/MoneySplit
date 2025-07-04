@@ -9,6 +9,11 @@ const PORT = process.env.PORT || 3300;
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// --- Backend API (PostgreSQL) ---
+const backend = require('./public/backend/index');
+app.use('/api', backend);
+// --- End Backend API ---
+
 // API route to calculate split
 app.post('/api/split', (req, res) => {
   const { participants } = req.body;
